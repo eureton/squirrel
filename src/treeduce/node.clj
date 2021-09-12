@@ -13,14 +13,6 @@
   [node]
   (empty? (*children* node)))
 
-(defn make
-  "Node with the given data and children."
-  ([data children]
-   (cond-> {:data data}
-     children (assoc *children* children)))
-  ([data]
-   (make data nil)))
-
 (defn add
   "Makes node y the last child of node x. If x has no children, y becomes the
    first child of x."
@@ -37,6 +29,14 @@
   [node]
   (cond-> node
     (leaf? node) (dissoc *children*)))
+
+(defn make
+  "Node with the given data and children."
+  ([data children]
+   (sweep {*data* data
+           *children* children}))
+  ([data]
+   (make data nil)))
 
 (defn update-children
   "Shorthand for sweeping after updating node with f on *children*."
