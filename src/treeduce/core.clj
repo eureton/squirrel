@@ -11,6 +11,7 @@
   "Makes tree y the last descendant of tree x. If x has no children, y becomes
    the first child of x. Is associative with treeduce.core/id-elem as identity
    element. Variadic version is shorthand for reducing over the arguments."
+  ([] *identity*)
   ([x] x)
   ([x y]
    (cond (= *identity* x) y

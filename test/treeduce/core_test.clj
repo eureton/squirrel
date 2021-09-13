@@ -81,7 +81,13 @@
              {:data -1
               :children [{:data 0
                           :children [{:data 1
-                                      :children [{:data 2}]}]}]})))))
+                                      :children [{:data 2}]}]}]})))
+
+    (testing "nil collection"
+      (is (= *identity* (reduce add nil))))
+
+    (testing "empty collection"
+      (is (= *identity* (reduce add []))))))
 
 (deftest seq-test
   (testing "nil"
