@@ -29,7 +29,7 @@
 
 (defmulti seq-inner
   "Don't call this directly, use treeduce.core/seq instead."
-  (fn [_ options] (-> options :traversal)))
+  (fn [_ {:keys [traversal]}] traversal))
 
 (defmethod seq-inner :depth-first
   [tree _]
