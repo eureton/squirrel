@@ -36,3 +36,26 @@
            {:d 1 :c [{:d 2}
                      {:d 3}]}))))
 
+(deftest add-test
+  (testing "to leaf node"
+    (testing "one"
+      (is (= (add {:data 1} {:data 2})
+             {:data 1
+              :children [{:data 2}]})))
+
+    (testing "many"
+      (is (= (add {:data 1} {:data 2} {:data 3} {:data 4})
+             {:data 1
+              :children [{:data 2} {:data 3} {:data 4}]}))))
+
+  (testing "to branch node"
+    (testing "one"
+      (is (= (add {:data :x :children [{:data :y}]} {:data :z})
+             {:data :x
+              :children [{:data :y} {:data :z}]})))
+
+    (testing "many"
+      (is (= (add {:data :x :children [{:data :y} {:data :z}]} {:data :q})
+             {:data :x
+              :children [{:data :y} {:data :z} {:data :q}]})))))
+
