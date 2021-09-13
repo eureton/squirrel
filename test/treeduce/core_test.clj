@@ -81,14 +81,7 @@
              {:data -1
               :children [{:data 0
                           :children [{:data 1
-                                      :children [{:data 2}]}]}]}))))
-  (testing "override defaults"
-    (is (= (binding [node/*children* :components]
-             (reduce add
-                     [{:data 0} {:data 1} {:data 2}]))
-           {:data 0
-            :components [{:data 1
-                          :components [{:data 2}]}]}))))
+                                      :children [{:data 2}]}]}]})))))
 
 (deftest seq-test
   (testing "nil"
@@ -112,7 +105,8 @@
 
   (testing "override defaults"
     (testing "*node/data*"
-      (is (= (binding [node/*data* :payload]
+      (is (= (binding [node/*data-readf* :payload
+                       node/*data-writef* #(assoc %2 :payload %1)]
                (tree/seq {:payload 0
                           :children [{:payload 1
                                       :children [{:payload 2}]}
@@ -158,8 +152,10 @@
                         :children [{:data 31}]}]})))
 
   (testing "override defaults"
-    (is (= (binding [node/*data* :d
-                     node/*children* :c]
+    (is (= (binding [node/*children-readf* :c
+                     node/*children-writef* #(let [n (assoc %2 :c %1)]
+                                               (cond-> n
+                                                 (node/*leaf?* n) (dissoc :c)))]
              (tree/map #(update % :d * 100)
                        {:d 1 :c [{:d 2}
                                  {:d 3}]}))

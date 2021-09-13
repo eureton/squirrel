@@ -30,11 +30,19 @@
     (is (= {:data :abc} (make :abc []))))
 
   (testing "override defaults"
-    (is (= (binding [*data* :d
-                     *children* :c]
+    (is (= (binding [*data-readf* :payload
+                     *data-writef* #(assoc %2 :payload %1)
+                     *children-readf* (comp :children :inner)
+                     *children-writef* #(let [n (-> %2
+                                                    (assoc-in [:inner :children] %1)
+                                                    (assoc-in [:inner :meta :count] (count %1)))]
+                                          (cond-> n
+                                            (*leaf?* n) (dissoc :inner)))]
              (make 1 [(make 2) (make 3)]))
-           {:d 1 :c [{:d 2}
-                     {:d 3}]}))))
+           {:payload 1
+            :inner {:meta {:count 2}
+                    :children [{:payload 2}
+                               {:payload 3}]}}))))
 
 (deftest add-test
   (testing "to leaf node"

@@ -28,15 +28,15 @@
   [tree _]
   (when (and tree (not= *identity* tree))
     (->> tree
-         (tree-seq (complement node/*leaf?*) node/*children*)
-         (core/map node/*data*))))
+         (tree-seq (complement node/*leaf?*) node/*children-readf*)
+         (core/map node/*data-readf*))))
 
 (defmethod seq-inner :breadth-first
   [tree options]
   (when (and tree (not= *identity* tree))
-    (let [[data children] ((juxt node/*data* node/*children*) tree)
-          children-seqs (core/map #(seq-inner % options) children)]
-      (concat [data]
+    (let [children-seqs (core/map #(seq-inner % options)
+                                  (node/*children-readf* tree))]
+      (concat [(node/*data-readf* tree)]
               (core/map first children-seqs)
               (mapcat rest children-seqs)))))
 
