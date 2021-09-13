@@ -1,7 +1,7 @@
-(ns treeduce.node-test
+(ns squirrel.node-test
   (:require [clojure.test :refer :all]
             [clojure.string :as string]
-            [treeduce.node :refer :all]))
+            [squirrel.node :refer :all]))
 
 (deftest *leaf?*-test
   (testing "nil"

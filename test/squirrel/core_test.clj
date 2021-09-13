@@ -1,9 +1,9 @@
-(ns treeduce.core-test
+(ns squirrel.core-test
   (:require [clojure.test :refer :all]
             [clojure.string :as string]
-            [treeduce.core :refer [*identity* add]]
-            [treeduce.core :as tree]
-            [treeduce.node :as node]))
+            [squirrel.core :refer [*identity* add]]
+            [squirrel.core :as tree]
+            [squirrel.node :as node]))
 
 (def left {:data "2-1"
            :children [{:data "3-1-1"}

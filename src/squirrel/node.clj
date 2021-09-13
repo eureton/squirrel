@@ -1,4 +1,4 @@
-(ns treeduce.node)
+(ns squirrel.node)
 
 (def ^:dynamic *data-readf*
   "Function to read data by."

@@ -1,16 +1,16 @@
-(ns treeduce.core
+(ns squirrel.core
   (:refer-clojure :exclude [map filter reduce seq])
   (:require [clojure.core :as core]
-            [treeduce.node :as node]))
+            [squirrel.node :as node]))
 
 (def ^:dynamic *identity*
-  "Identity element for the treeduce.core/add binary operation."
+  "Identity element for the squirrel.core/add binary operation."
   nil)
 
 (defn add
   "Makes tree y the last descendant of tree x. If x has no children, y becomes
-   the first child of x. Is associative with treeduce.core/id-elem as identity
-   element. Variadic version is shorthand for reducing over the arguments."
+   the first child of x. Is associative with *identity* as identity element.
+   Variadic version is shorthand for reducing over the arguments."
   ([] *identity*)
   ([x] x)
   ([x y]
@@ -28,7 +28,7 @@
        (not= *identity* tree)))
 
 (defmulti seq-inner
-  "Don't call this directly, use treeduce.core/seq instead."
+  "Don't call this directly, use squirrel.core/seq instead."
   (fn [_ {:keys [traversal]}] traversal))
 
 (defmethod seq-inner :depth-first
