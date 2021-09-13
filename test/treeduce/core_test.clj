@@ -129,8 +129,11 @@
              [0 1 3])))))
 
 (deftest map-test
-  (testing "pun nil"
-    (nil? (tree/map even? nil)))
+  (testing "nil"
+    (is (= *identity* (tree/map even? nil))))
+
+  (testing "identity"
+    (is (= *identity* (tree/map even? *identity*))))
   
   (testing "preserves structure"
     (is (= (tree/map #(update % :data * 10)
@@ -167,6 +170,31 @@
                                  {:d 3}]}))
            {:d 100 :c [{:d 200}
                        {:d 300}]}))))
+
+(deftest filter-test
+  (testing "nil"
+    (is (= *identity* (tree/filter :x nil))))
+
+  (testing "identity"
+    (is (= *identity* (tree/filter :x *identity*))))
+
+  (testing "root qualifies"
+    (is (= (tree/filter (comp odd? :data)
+                        {:data 1
+                         :children [{:data 2
+                                     :children [{:data 3}
+                                                {:data 4}]}
+                                    {:data 5
+                                     :children [{:data 6}
+                                                {:data 7}]}]})
+           {:data 1
+            :children [{:data 5
+                        :children [{:data 6} {:data 7}]}]})))
+
+  (testing "root doesn't qualify"
+    (is (= (tree/filter (comp even? :data)
+                        {:data 1 :children [{:data 2}]})
+           *identity*))))
 
 (deftest reduce-test
   (defn rf

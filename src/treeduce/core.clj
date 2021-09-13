@@ -1,5 +1,5 @@
 (ns treeduce.core
-  (:refer-clojure :exclude [map reduce seq])
+  (:refer-clojure :exclude [map filter reduce seq])
   (:require [clojure.core :as core]
             [treeduce.node :as node]))
 
@@ -21,20 +21,26 @@
   ([x y & ys]
    (core/reduce add x (conj ys y))))
 
+(defn weighty?
+  "True if tree is neither nil nor *identity*, false otherwise."
+  [tree]
+  (and tree
+       (not= *identity* tree)))
+
 (defmulti seq-inner
   "Don't call this directly, use treeduce.core/seq instead."
   (fn [_ options] (-> options :traversal)))
 
 (defmethod seq-inner :depth-first
   [tree _]
-  (when (and tree (not= *identity* tree))
+  (when (weighty? tree)
     (->> tree
          (tree-seq (complement node/*leaf?*) node/*children-readf*)
          (core/map node/*data-readf*))))
 
 (defmethod seq-inner :breadth-first
   [tree options]
-  (when (and tree (not= *identity* tree))
+  (when (weighty? tree)
     (let [children-seqs (core/map #(seq-inner % options)
                                   (node/*children-readf* tree))]
       (concat [(node/*data-readf* tree)]
@@ -54,11 +60,24 @@
   "Tree consisting of the result of applying f to each node in tree. Nodes are
    walked in breadth-first order. Any modifications f makes to the collection of
    child nodes and/or to the child nodes themselves will be observable in later
-   calls."
+   calls. If run on nil or *identity*, returns *identity*."
   [f tree]
-  (some-> tree
-          f
-          (node/update-children (comp vec #(core/map %2 %1)) #(map f %))))
+  (if (weighty? tree)
+    (-> tree
+        f
+        (node/update-children #(mapv %2 %1) #(map f %)))
+    *identity*))
+
+(defn filter
+  "Tree consisting of those nodes for which (pred node) returns logical true.
+   Function pred must be free of side-effects. If run on nil or *identity*,
+   returns *identity*."
+  [pred tree]
+  (if (and (weighty? tree)
+           (pred tree))
+    (node/update-children tree
+                          #(filterv %2 %1) #(filter pred %))
+    *identity*))
 
 (defn reduce
   "Reduces tree to a value by applying f to the data of each node in tree. Has
