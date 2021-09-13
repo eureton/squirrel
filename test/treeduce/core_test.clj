@@ -111,12 +111,22 @@
              (tree/seq tree {:traversal :depth-first})))))
 
   (testing "override defaults"
-    (is (= (binding [node/*data* :payload]
-             (tree/seq {:payload 0
-                        :children [{:payload 1
-                                    :children [{:payload 2}]}
-                                   {:payload 3}]}))
-           [0 1 2 3]))))
+    (testing "*node/data*"
+      (is (= (binding [node/*data* :payload]
+               (tree/seq {:payload 0
+                          :children [{:payload 1
+                                      :children [{:payload 2}]}
+                                     {:payload 3}]}))
+             [0 1 2 3])))
+
+    (testing "*node/leaf?*"
+      (is (= (binding [node/*leaf?* (some-fn (comp empty? :children)
+                                             (comp odd? :data))]
+               (tree/seq {:data 0
+                          :children [{:data 1
+                                      :children [{:data 2}]}
+                                     {:data 3}]}))
+             [0 1 3])))))
 
 (deftest map-test
   (testing "pun nil"

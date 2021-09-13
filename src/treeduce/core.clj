@@ -15,7 +15,7 @@
   ([x y]
    (cond (= *identity* x) y
          (= *identity* y) x
-         (node/leaf? x) (node/update-children x (comp vec conj) y)
+         (node/*leaf?* x) (node/update-children x (comp vec conj) y)
          :else (node/update-nth-child x (-> x node/fanout dec) add y)))
   ([x y & ys]
    (core/reduce add x (conj ys y))))
@@ -28,7 +28,7 @@
   [tree _]
   (when (and tree (not= *identity* tree))
     (->> tree
-         (tree-seq (complement node/leaf?) node/*children*)
+         (tree-seq (complement node/*leaf?*) node/*children*)
          (core/map node/*data*))))
 
 (defmethod seq-inner :breadth-first

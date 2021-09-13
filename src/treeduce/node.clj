@@ -8,7 +8,7 @@
   "Keyword to access children by."
   :children)
 
-(defn leaf?
+(defn ^:dynamic *leaf?*
   "True if node has no children, false otherwise."
   [node]
   (empty? (*children* node)))
@@ -28,7 +28,7 @@
   "Keeps the node hash free of empty or nil children collections."
   [node]
   (cond-> node
-    (leaf? node) (dissoc *children*)))
+    (*leaf?* node) (dissoc *children*)))
 
 (defn make
   "Node with the given data and children."
