@@ -1,5 +1,5 @@
 (ns squirrel.core
-  (:refer-clojure :exclude [map filter reduce seq])
+  (:refer-clojure :exclude [map filter remove reduce seq])
   (:require [clojure.core :as core]
             [squirrel.node :as node]))
 
@@ -76,8 +76,16 @@
   (if (and (weighty? tree)
            (pred tree))
     (node/update-children tree
-                          #(filterv %2 %1) #(filter pred %))
+                          (fn [nodes]
+                            (->> nodes
+                                 (core/map #(filter pred %))
+                                 (filterv #(not= *identity* %)))))
     *identity*))
+
+(defn remove
+  "Shorthand for (squirrel.core/filter (complement pred) tree)"
+  [pred tree]
+  (filter (complement pred) tree))
 
 (defn reduce
   "Reduces tree to a value by applying f to the data of each node in tree. Has

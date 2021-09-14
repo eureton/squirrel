@@ -189,7 +189,7 @@
                                                 {:data 7}]}]})
            {:data 1
             :children [{:data 5
-                        :children [{:data 6} {:data 7}]}]})))
+                        :children [{:data 7}]}]})))
 
   (testing "root doesn't qualify"
     (is (= (tree/filter (comp even? :data)
