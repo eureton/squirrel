@@ -12,7 +12,7 @@
             :children [{:data "3-2-1"}
                        {:data "3-2-2"}]})
 (def tree {:data "1"
-            :children [left right]})
+           :children [left right]})
 
 (deftest add-test
   (testing "monoid"
