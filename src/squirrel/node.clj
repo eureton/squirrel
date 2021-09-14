@@ -54,6 +54,10 @@
   ([data]
    (make data nil)))
 
+(def node
+  "Useful as shorthand symbol to :refer from."
+  make)
+
 (defn update-children
   "Shorthand for sweeping after updating node with f on *children*."
   [node f & args]
