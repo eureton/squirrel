@@ -4,7 +4,7 @@
             [squirrel.node :as node]))
 
 (def ^:dynamic *identity*
-  "Identity element for the squirrel.core/add binary operation."
+  "Identity element for the squirrel.tree/add binary operation."
   nil)
 
 (defn add
@@ -28,7 +28,7 @@
        (not= *identity* tree)))
 
 (defmulti seq-inner
-  "Don't call this directly, use squirrel.core/seq instead."
+  "Don't call this directly, use squirrel.tree/seq instead."
   (fn [_ {:keys [traversal]}] traversal))
 
 (defmethod seq-inner :depth-first
@@ -83,7 +83,7 @@
     *identity*))
 
 (defn remove
-  "Shorthand for (squirrel.core/filter (complement pred) tree)"
+  "Shorthand for (squirrel.tree/filter (complement pred) tree)"
   [pred tree]
   (filter (complement pred) tree))
 
