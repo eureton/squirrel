@@ -1,2 +1,4 @@
-(ns squirrel.core)
+(ns squirrel.core
+  (:require [squirrel.tree]
+            [squirrel.node]))
 
