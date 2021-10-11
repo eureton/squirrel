@@ -1,5 +1,9 @@
 (ns squirrel.node)
 
+(def ^:dynamic *seed*
+  "Data structure to populate node with."
+  {})
+
 (def ^:dynamic *data-readf*
   "Function to read data by."
   :data)
@@ -18,7 +22,7 @@
   [node]
   (empty? (*children-readf* node)))
 
-(defn sweep
+(defn ^:dynamic *sweep*
   "Keeps the node hash free of empty or nil children collections."
   [node]
   (cond-> node
@@ -27,7 +31,7 @@
 (defn ^:dynamic *children-writef*
   "Function to write children by."
   [children node]
-  (sweep (assoc node :children children)))
+  (*sweep* (assoc node :children children)))
 
 (defn add
   "Makes node y the last child of node x. If x has no children, y becomes the
@@ -47,10 +51,10 @@
 (defn make
   "Node with the given data and children."
   ([data children]
-   (->> {}
+   (->> *seed*
         (*data-writef* data)
         (*children-writef* children)
-        sweep))
+        *sweep*))
   ([data]
    (make data nil)))
 
@@ -66,7 +70,7 @@
         *children-readf*
         f
         (*children-writef* node)
-        sweep)))
+        *sweep*)))
 
 (defn update-nth-child
   "Applies f to an argument list consisting of the n-th child of node followed
