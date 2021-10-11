@@ -1,7 +1,7 @@
 (ns squirrel.tree-test
   (:require [clojure.test :refer :all]
             [clojure.string :as string]
-            [squirrel.tree :refer [*identity* add]]
+            [squirrel.tree :refer [*identity* add sweep]]
             [squirrel.tree :as tree]
             [squirrel.node :as node]))
 
@@ -136,26 +136,28 @@
     (is (= *identity* (tree/map even? *identity*))))
   
   (testing "preserves structure"
-    (is (= (tree/map #(update % :data * 10)
-                     {:data 1
-                      :children [{:data 2} {:data 3}]})
+    (is (= (->> {:data 1
+                 :children [{:data 2} {:data 3}]}
+                (tree/map #(update % :data * 10))
+                sweep)
            {:data 10
             :children [{:data 20}
                        {:data 30}]})))
 
   (testing "alters structure"
-    (is (= (tree/map (fn [x]
-                       (update x :children #(filter (comp odd? :data) %)))
-                     {:data 1
-                      :children [{:data 2 :children [{:data 20}
-                                                     {:data 21}
-                                                     {:data 22}]}
-                                 {:data 3 :children [{:data 30}
-                                                     {:data 31}
-                                                     {:data 32}]}
-                                 {:data 4 :children [{:data 40}
-                                                     {:data 41}
-                                                     {:data 42}]}]})
+    (is (= (->> {:data 1
+                 :children [{:data 2 :children [{:data 20}
+                                                {:data 21}
+                                                {:data 22}]}
+                            {:data 3 :children [{:data 30}
+                                                {:data 31}
+                                                {:data 32}]}
+                            {:data 4 :children [{:data 40}
+                                                {:data 41}
+                                                {:data 42}]}]}
+                (tree/map (fn [x]
+                            (update x :children #(filter (comp odd? :data) %))))
+                sweep)
            {:data 1
             :children [{:data 3
                         :children [{:data 31}]}]})))
@@ -169,7 +171,30 @@
                        {:d 1 :c [{:d 2}
                                  {:d 3}]}))
            {:d 100 :c [{:d 200}
-                       {:d 300}]}))))
+                       {:d 300}]})))
+
+  (testing "laziness"
+    (is (not (realized? (->> {:data 1
+                              :children [{:data 2} {:data 3}]}
+                             (tree/map #(update % :data inc))
+                             :children)))))
+
+  (testing "postprocessing"
+    (is (= (->> {:data 1
+                 :children [{:data 10
+                             :children [{:data 100} {:data 200}]}
+                            {:data 20}]}
+                (tree/map #(update % :data inc)
+                          #(->> %
+                                :children
+                                (map :data)
+                                clojure.string/join
+                                (update % :data str)))
+                sweep)
+           {:data "21110120121"
+            :children [{:data "11101201"
+                        :children [{:data "101"} {:data "201"}]}
+                       {:data "21"}]}))))
 
 (deftest filter-test
   (testing "nil"
@@ -179,14 +204,15 @@
     (is (= *identity* (tree/filter :x *identity*))))
 
   (testing "root qualifies"
-    (is (= (tree/filter (comp odd? :data)
-                        {:data 1
-                         :children [{:data 2
-                                     :children [{:data 3}
-                                                {:data 4}]}
-                                    {:data 5
-                                     :children [{:data 6}
-                                                {:data 7}]}]})
+    (is (= (->> {:data 1
+                 :children [{:data 2
+                             :children [{:data 3}
+                                        {:data 4}]}
+                            {:data 5
+                             :children [{:data 6}
+                                        {:data 7}]}]}
+                (tree/filter (comp odd? :data))
+                sweep)
            {:data 1
             :children [{:data 5
                         :children [{:data 7}]}]})))

@@ -58,15 +58,17 @@
 
 (defn map
   "Tree consisting of the result of applying f to each node in tree. Nodes are
-   walked in breadth-first order. Any modifications f makes to the collection of
-   child nodes and/or to the child nodes themselves will be observable in later
-   calls. If run on nil or *identity*, returns *identity*."
-  [f tree]
-  (if (weighty? tree)
-    (-> tree
-        f
-        (node/update-children #(mapv %2 %1) #(map f %)))
-    *identity*))
+   walked in depth-first order. Applies f and pref before walking child nodes,
+   postf after. If run on nil or *identity*, returns *identity*."
+  ([f tree]
+   (map f identity tree))
+  ([pref postf tree]
+   (if (weighty? tree)
+     (-> tree
+         pref
+         (node/map-children #(map pref postf %))
+         postf)
+     *identity*)))
 
 (defn filter
   "Tree consisting of those nodes for which (pred node) returns logical true.
@@ -95,4 +97,9 @@
    (core/reduce f init (seq tree {:traversal traversal})))
   ([f tree traversal]
    (core/reduce f (seq tree {:traversal traversal}))))
+
+(defn sweep
+  "Sweeps all nodes in tree."
+  [tree]
+  (map identity node/*sweep* tree))
 

@@ -31,7 +31,7 @@
 (defn ^:dynamic *children-writef*
   "Function to write children by."
   [children node]
-  (*sweep* (assoc node :children children)))
+  (assoc node :children children))
 
 (defn add
   "Makes node y the last child of node x. If x has no children, y becomes the
@@ -40,7 +40,6 @@
   (-> x
       *children-readf*
       (concat ys)
-      vec
       (*children-writef* x)))
 
 (defn fanout
@@ -53,8 +52,7 @@
   ([data children]
    (->> *seed*
         (*data-writef* data)
-        (*children-writef* children)
-        *sweep*))
+        (*children-writef* children)))
   ([data]
    (make data nil)))
 
@@ -63,14 +61,13 @@
   make)
 
 (defn update-children
-  "Shorthand for sweeping after updating node with f on *children*."
+  "Shorthand for read / transform / write pipeline on children."
   [node f & args]
   (let [f #(apply f % args)]
     (-> node
         *children-readf*
         f
-        (*children-writef* node)
-        *sweep*)))
+        (*children-writef* node))))
 
 (defn update-nth-child
   "Applies f to an argument list consisting of the n-th child of node followed
@@ -81,4 +78,9 @@
         *children-readf*
         (update n f)
         (*children-writef* node))))
+
+(defn map-children
+  "Shorthand for mapping f over children."
+  [node f]
+  (update-children node #(map f %)))
 

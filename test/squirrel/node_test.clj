@@ -1,7 +1,8 @@
 (ns squirrel.node-test
   (:require [clojure.test :refer :all]
             [clojure.string :as string]
-            [squirrel.node :refer :all]))
+            [squirrel.node :refer :all]
+            [squirrel.tree :as tree]))
 
 (deftest *leaf?*-test
   (testing "nil"
@@ -15,19 +16,19 @@
 
 (deftest make-test
   (testing "data"
-    (is (= {:data :abc} (make :abc))))
+    (is (= {:data :abc} (tree/sweep (make :abc)))))
 
   (testing "children"
-    (is (= (make :a [(make :b) (make :c)])
+    (is (= (tree/sweep (make :a [(make :b) (make :c)]))
            {:data :a
             :children [{:data :b}
                        {:data :c}]})))
 
   (testing "children is nil"
-    (is (= {:data :abc} (make :abc nil))))
+    (is (= {:data :abc} (tree/sweep (make :abc nil)))))
 
   (testing "children is empty collection"
-    (is (= {:data :abc} (make :abc []))))
+    (is (= {:data :abc} (tree/sweep (make :abc [])))))
 
   (testing "override defaults"
     (is (= (binding [*data-readf* :payload
