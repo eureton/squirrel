@@ -99,7 +99,7 @@
    (core/reduce f (seq tree {:traversal traversal}))))
 
 (defn sweep
-  "Sweeps all nodes in tree."
+  "Sweeps all nodes in tree. See squirrel.node/sweep for details."
   [tree]
   (map identity node/*sweep* tree))
 
