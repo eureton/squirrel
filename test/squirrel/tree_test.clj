@@ -5,15 +5,6 @@
             [squirrel.tree :as tree]
             [squirrel.node :as node]))
 
-(def left {:data "2-1"
-           :children [{:data "3-1-1"}
-                      {:data "3-1-2"}]})
-(def right {:data "2-2"
-            :children [{:data "3-2-1"}
-                       {:data "3-2-2"}]})
-(def tree {:data "1"
-           :children [left right]})
-
 (deftest add-test
   (testing "monoid"
     (testing "identity element"
@@ -97,13 +88,20 @@
     (nil? (tree/seq *identity*)))
   
   (testing "traversal"
+    (def tree {:data 1
+               :children [{:data 2
+                           :children [{:data 3} {:data 4}]}
+                          {:data 5
+                           :children [{:data 6} {:data 7}]}]})
+
+
     (testing "depth-first"
       (is (= (tree/seq tree {:traversal :depth-first})
-             ["1" "2-1" "3-1-1" "3-1-2" "2-2" "3-2-1" "3-2-2"])))
+             [1 2 3 4 5 6 7])))
 
     (testing "breadth-first"
       (is (= (tree/seq tree {:traversal :breadth-first})
-             ["1" "2-1" "2-2" "3-1-1" "3-1-2" "3-2-1" "3-2-2"])))
+             [1 2 5 3 4 6 7])))
 
     (testing "default"
       (is (= (tree/seq tree)
@@ -223,11 +221,6 @@
            *identity*))))
 
 (deftest reduce-test
-  (defn rf
-    [acc x]
-    (cond-> acc
-      (not (string/starts-with? x "3-2")) (str ", " x)))
-
   (testing "standard"
     (is (= (tree/reduce +
                         {:data 2 :children [{:data 3}
@@ -235,15 +228,22 @@
                         :depth-first)
            9)))
   
-  (testing "depth-first"
-    (is (= (tree/reduce rf tree :depth-first)
-           "1, 2-1, 3-1-1, 3-1-2, 2-2")))
+  (testing "traversal"
+    (def tree {:data 1
+               :children [{:data 2
+                           :children [{:data 3} {:data 4}]}
+                          {:data 5
+                           :children [{:data 6} {:data 7}]}]})
 
-  (testing "breadth-first"
-    (is (= (tree/reduce rf tree :breadth-first)
-           "1, 2-1, 2-2, 3-1-1, 3-1-2")))
+    (testing "depth-first"
+      (is (= (tree/reduce str tree :depth-first)
+             "1234567")))
 
-  (testing "init value"
-    (is (= (tree/reduce rf "@" tree :depth-first)
-           (str "@, " (tree/reduce rf tree :depth-first))))))
+    (testing "breadth-first"
+      (is (= (tree/reduce str tree :breadth-first)
+             "1253467")))
+
+    (testing "init value"
+      (is (= (tree/reduce str "@" tree :depth-first)
+             (str "@" (tree/reduce str tree :depth-first)))))))
 
