@@ -218,7 +218,13 @@
   (testing "root doesn't qualify"
     (is (= (tree/filter (comp even? :data)
                         {:data 1 :children [{:data 2}]})
-           *identity*))))
+           *identity*)))
+
+  (testing "laziness"
+    (is (not (realized? (->> {:data 1
+                              :children [{:data 2} {:data 3}]}
+                             (tree/filter (comp odd? :data))
+                             :children))))))
 
 (deftest reduce-test
   (testing "standard"

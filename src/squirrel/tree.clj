@@ -81,7 +81,7 @@
                           (fn [nodes]
                             (->> nodes
                                  (core/map #(filter pred %))
-                                 (filterv #(not= *identity* %)))))
+                                 (core/filter #(not= *identity* %)))))
     *identity*))
 
 (defn remove
