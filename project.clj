@@ -1,4 +1,4 @@
-(defproject org.clojars.eureton/squirrel "0.1.0"
+(defproject org.clojars.eureton/squirrel "0.2.0"
   :description "map, filter, reduce and more for tree data structures"
   :url "https://github.com/eureton/squirrel"
   :license {:name "MIT"
