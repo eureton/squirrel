@@ -1,70 +1,88 @@
 (ns squirrel.node-test
   (:require [clojure.test :refer :all]
             [clojure.string :as string]
-            [squirrel.node :refer :all]
-            [squirrel.tree :as tree]))
+            [squirrel.node :refer :all]))
 
 (deftest *leaf?*-test
   (testing "nil"
     (true? (*leaf?* nil)))
   
   (testing ":children is nil"
-    (true? (*leaf?* {:children nil})))
+    (true? (*leaf?* (make :_ nil))))
   
   (testing ":children is empty"
-    (true? (*leaf?* {:children []}))))
+    (true? (*leaf?* (make :_ [])))))
 
 (deftest make-test
   (testing "data"
-    (is (= {:data :abc} (tree/sweep (make :abc)))))
+    (is (= (make :abc)
+           {:data :abc
+            :children []})))
 
   (testing "children"
-    (is (= (tree/sweep (make :a [(make :b) (make :c)]))
+    (is (= (make :a [(make :b) (make :c)])
            {:data :a
-            :children [{:data :b}
-                       {:data :c}]})))
+            :children [{:data :b
+                        :children []}
+                       {:data :c
+                        :children []}]})))
 
   (testing "children is nil"
-    (is (= {:data :abc} (tree/sweep (make :abc nil)))))
+    (is (= (make :abc nil)
+           {:data :abc
+            :children nil})))
 
   (testing "children is empty collection"
-    (is (= {:data :abc} (tree/sweep (make :abc [])))))
+    (is (= (make :abc [])
+           {:data :abc
+            :children []})))
 
   (testing "override defaults"
-    (is (= (binding [*data-readf* :payload
-                     *data-writef* #(assoc %2 :payload %1)
-                     *children-readf* (comp :children :inner)
-                     *children-writef* #(let [n (-> %2
-                                                    (assoc-in [:inner :children] %1)
-                                                    (assoc-in [:inner :meta :count] (count %1)))]
-                                          (cond-> n
-                                            (*leaf?* n) (dissoc :inner)))]
-             (make 1 [(make 2) (make 3)]))
-           {:payload 1
-            :inner {:meta {:count 2}
-                    :children [{:payload 2}
-                               {:payload 3}]}}))))
+    (testing "hiccup notation"
+      (is (= (binding [*seed* []
+                       *data-readf* first
+                       *data-writef* #(assoc %2 0 %1)
+                       *children-readf* second
+                       *children-writef* #(assoc %2 1 %1)]
+               (make :a [(make :b) (make :c)]))
+             [:a [[:b []]
+                  [:c []]]])))
+
+    (testing "meta data"
+      (is (= (binding [*data-readf* :payload
+                       *data-writef* #(assoc %2 :payload %1)
+                       *children-writef* #(-> %2
+                                              (assoc-in [:meta :num] (count %1))
+                                              (assoc :children %1))]
+               (make :a [(make :b) (make :c)]))
+             {:payload :a
+              :meta {:num 2}
+              :children [{:payload :b
+                          :meta {:num 0}
+                          :children []}
+                         {:payload :c
+                          :meta {:num 0}
+                          :children []}]})))))
 
 (deftest add-test
-  (testing "to leaf node"
+  (testing "to leaf"
     (testing "one"
-      (is (= (add {:data 1} {:data 2})
-             {:data 1
-              :children [{:data 2}]})))
+      (is (= (add (make 1) (make 2))
+             (make 1 [(make 2)]))))
 
     (testing "many"
-      (is (= (add {:data 1} {:data 2} {:data 3} {:data 4})
-             {:data 1
-              :children [{:data 2} {:data 3} {:data 4}]}))))
+      (is (= (add (make 1) (make 2) (make 3) (make 4))
+             (make 1 [(make 2) (make 3) (make 4)])))))
 
-  (testing "to branch node"
+  (testing "to non-leaf"
     (testing "one"
-      (is (= (add {:data :x :children [{:data :y}]} {:data :z})
-             {:data :x
-              :children [{:data :y} {:data :z}]})))
+      (is (= (add (make :a [(make :b)]) (make :c))
+             (make :a [(make :b) (make :c)]))))
 
     (testing "many"
-      (is (= (add {:data :x :children [{:data :y} {:data :z}]} {:data :q})
-             {:data :x
-              :children [{:data :y} {:data :z} {:data :q}]})))))
+      (is (= (add (make :a [(make :b) (make :c)])
+                  (make :d))
+             (make :a [(make :b)
+                       (make :c)
+                       (make :d)]))))))
 
