@@ -54,7 +54,7 @@
         (*data-writef* data)
         (*children-writef* children)))
   ([data]
-   (make data nil)))
+   (make data [])))
 
 (def node
   "Useful as shorthand symbol to :refer from."
