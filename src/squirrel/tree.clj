@@ -16,7 +16,7 @@
   ([x y]
    (cond (= *identity* x) y
          (= *identity* y) x
-         (node/*leaf?* x) (node/update-children x (comp vec conj) y)
+         (node/leaf? x) (node/update-children x (comp vec conj) y)
          :else (node/update-nth-child x (-> x node/fanout dec) add y)))
   ([x y & ys]
    (core/reduce add x (conj ys y))))
@@ -35,7 +35,7 @@
   [tree _]
   (when (weighty? tree)
     (->> tree
-         (tree-seq (complement node/*leaf?*) node/*children-readf*)
+         (tree-seq node/not-leaf? node/*children-readf*)
          (core/map node/*data-readf*))))
 
 (defmethod seq-inner :breadth-first
@@ -58,15 +58,17 @@
 
 (defn map
   "Tree consisting of the result of applying f to each node in tree. Nodes are
-   walked in breadth-first order. Any modifications f makes to the collection of
-   child nodes and/or to the child nodes themselves will be observable in later
-   calls. If run on nil or *identity*, returns *identity*."
-  [f tree]
-  (if (weighty? tree)
-    (-> tree
-        f
-        (node/update-children #(mapv %2 %1) #(map f %)))
-    *identity*))
+   walked in depth-first order. Applies f and pref before walking child nodes,
+   postf after. If run on nil or *identity*, returns *identity*."
+  ([f tree]
+   (map f identity tree))
+  ([pref postf tree]
+   (if (weighty? tree)
+     (-> tree
+         pref
+         (node/map-children #(map pref postf %))
+         postf)
+     *identity*)))
 
 (defn filter
   "Tree consisting of those nodes for which (pred node) returns logical true.
@@ -79,7 +81,7 @@
                           (fn [nodes]
                             (->> nodes
                                  (core/map #(filter pred %))
-                                 (filterv #(not= *identity* %)))))
+                                 (core/filter #(not= *identity* %)))))
     *identity*))
 
 (defn remove
@@ -95,4 +97,9 @@
    (core/reduce f init (seq tree {:traversal traversal})))
   ([f tree traversal]
    (core/reduce f (seq tree {:traversal traversal}))))
+
+(defn sweep
+  "Sweeps all nodes in tree. See squirrel.node/sweep for details."
+  [tree]
+  (map identity node/*sweep* tree))
 
