@@ -99,15 +99,7 @@
 
       (testing "default"
         (is (= (tree/seq tree)
-               (tree/seq tree {:traversal :depth-first}))))))
-
-  (testing "override defaults"
-    (is (= (binding [node/*leaf?* (some-fn (comp empty? :children)
-                                           (comp odd? :data))]
-             (tree/seq (node 0 [(node 1
-                                      [(node 2)])
-                                (node 3)])))
-           [0 1 3]))))
+               (tree/seq tree {:traversal :depth-first})))))))
 
 (deftest map-test
   (testing "nil"

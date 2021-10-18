@@ -3,15 +3,25 @@
             [clojure.string :as string]
             [squirrel.node :refer :all]))
 
-(deftest *leaf?*-test
+(deftest leaf?-test
   (testing "nil"
-    (true? (*leaf?* nil)))
+    (is (true? (leaf? nil))))
   
   (testing ":children is nil"
-    (true? (*leaf?* (make :_ nil))))
+    (is (true? (leaf? (make :_ nil)))))
   
   (testing ":children is empty"
-    (true? (*leaf?* (make :_ [])))))
+    (is (true? (leaf? (make :_ []))))))
+
+(deftest not-leaf?-test
+  (testing "nil"
+    (is (false? (not-leaf? nil))))
+
+  (testing ":children is nil"
+    (is (false? (not-leaf? (make :_ nil)))))
+
+  (testing ":children is empty"
+    (is (false? (not-leaf? (make :_ []))))))
 
 (deftest make-test
   (testing "data"

@@ -17,16 +17,20 @@
   "Function to read children by."
   :children)
 
-(defn ^:dynamic *leaf?*
+(defn leaf?
   "True if node has no children, false otherwise."
   [node]
   (empty? (*children-readf* node)))
+
+(def not-leaf?
+  "Shorthand for (complement leaf?)"
+  (complement leaf?))
 
 (defn ^:dynamic *sweep*
   "Keeps the node hash free of empty or nil children collections."
   [node]
   (cond-> node
-    (*leaf?* node) (dissoc :children)))
+    (leaf? node) (dissoc :children)))
 
 (defn ^:dynamic *children-writef*
   "Function to write children by."
